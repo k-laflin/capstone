@@ -14,7 +14,9 @@ commands:
               echo $ECR_URL
         - run: 
             name: set docker creds for aws
-            command: aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $ECR_URL
+            command: |
+              echo $ECR_URL
+              aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $ECR_URL
 
   python-install-aws:
     description: installs awscli v2 using pip
@@ -87,14 +89,10 @@ jobs:
               make setup
               source capstone/bin/activate
               make install
-              ls
-              ./hadolint --version
-              pylint --version
         - run: 
             name: lint
             command: |
               source capstone/bin/activate
-              pylint --version
               make lint
 
     test: 
@@ -124,6 +122,6 @@ workflows:
   default: 
     jobs: 
         - lint
-        # - build
-        # - test: 
-        #     requires: [lint, build]
+        - build
+        - test : 
+            requires: [lint, build]
