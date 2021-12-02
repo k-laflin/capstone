@@ -38,8 +38,8 @@ commands:
 
 jobs:
     build:
-      docker: 
-        - image: python:3.7.3-stretch
+      machine: 
+          image: ubuntu-2004:202111-01
       steps:
         - checkout
         - python-install-aws
@@ -67,13 +67,15 @@ jobs:
               make setup
               source ~/.capstone/bin/activate
               make install
+              ls
+              ./hadolint --version
         - run: 
             name: lint
             command: make lint
 
     test: 
-      docker: 
-        - image: python:3.7-alpine3.11
+      machine: 
+          image: ubuntu-2004:202111-01
       steps:
         - checkout 
         - python-install-aws
