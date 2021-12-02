@@ -24,6 +24,7 @@ commands:
           command: |
               python -m pip install awscliv2
               awsv2 --install
+              alias aws='awsv2'
               aws --version
 
 jobs:
