@@ -89,9 +89,14 @@ jobs:
               make install
               ls
               ./hadolint --version
+              pylint --version
         - run: 
             name: lint
-            command: make lint
+            command: |
+              pylint --version
+              source capstone/bin/activate
+              pylint --version
+              make lint
 
     test: 
       machine: 
@@ -120,6 +125,6 @@ workflows:
   default: 
     jobs: 
         - lint
-        - build
-        - test: 
-            requires: [lint, build]
+        # - build
+        # - test: 
+        #     requires: [lint, build]
