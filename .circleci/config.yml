@@ -12,11 +12,12 @@ commands:
               export ECR_URL=$(aws ecr describe-repositories --repository-names capstone \
               --query 'repositories[0].repositoryUri' | tr -d '"' | cut -d/ -f1)
               echo $ECR_URL
-        - run: 
-            name: set docker creds for aws
-            command: |
-              echo $ECR_URL
-              aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $ECR_URL
+              aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
+        # - run: 
+        #     name: set docker creds for aws
+        #     command: |
+        #       echo $ECR_URL
+        #       aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $ECR_URL
 
   python-install-aws:
     description: installs awscli v2 using pip
@@ -65,15 +66,17 @@ jobs:
       steps:
         - checkout
         - python-install-aws
-        - eks-login
+        #- eks-login
         - run:
             name: build docker image
             command: |
+              aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
               docker build -t capstone:v${CIRCLE_WORKFLOW_ID:0:7} .
 
         - run: 
             name: commit new docker image
             command: |
+              aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
               docker tag capstone:v${CIRCLE_WORKFLOW_ID:0:7} "${ECR_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
               docker push "${ECR_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
 
@@ -101,10 +104,11 @@ jobs:
       steps:
         - checkout 
         - python-install-aws
-        - eks-login
+        #- eks-login
         - run: 
             name: start docker
             command: |
+              aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
               docker pull "${ECR_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
               docker container run -p 80:81 -d "${ECR_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
         - run: 
