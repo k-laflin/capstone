@@ -11,5 +11,5 @@ install:
 chmod +x ./hadolint
 
 lint:
-	hadolint --ignore=DL3059  Dockerfile
+	./hadolint --ignore=DL3059  Dockerfile
 	pylint --disable=R,C,W1203,W1202 app.py
