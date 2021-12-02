@@ -1,8 +1,8 @@
 setup:
-	python3 -m venv ~/.capstone
+	python3 -m venv .capstone
 
 source:
-	source ~/.capstone/bin/activate
+	source .capstone/bin/activate
 
 install:
 	pip install --upgrade pip &&\
