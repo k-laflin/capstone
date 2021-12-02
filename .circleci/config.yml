@@ -22,9 +22,13 @@ commands:
       - run: 
           name: install aws cli
           command: |
+              echo 'installing with pip'
               python -m pip install awscliv2
+              echo 'done with pip; running awsv2 --install'
               awsv2 --install
+              'aliasing'
               alias aws='awsv2'
+              'call version'
               aws --version
 
 jobs:
