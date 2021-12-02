@@ -78,8 +78,8 @@ jobs:
             command: |
               aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
               docker image ls
-              docker tag "capstone:v${CIRCLE_WORKFLOW_ID:0:7}" "${ECR_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
-              docker push "${ECR_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
+              docker tag "capstone:v${CIRCLE_WORKFLOW_ID:0:7}" "${AWS_ECR_ACCOUNT_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
+              docker push "${AWS_ECR_ACCOUNT_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
 
 
     lint:
@@ -110,8 +110,8 @@ jobs:
             name: start docker
             command: |
               aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
-              docker pull "${ECR_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
-              docker container run -p 80:81 -d "${ECR_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
+              docker pull "${AWS_ECR_ACCOUNT_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
+              docker container run -p 80:81 -d "${AWS_ECR_ACCOUNT_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
         - run: 
             name: test image
             command: |
