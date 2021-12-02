@@ -1,5 +1,6 @@
 import random
 from flask import Flask
+from flask import render_template
 
 # generate new background color
 R = random.randint(0, 255)
@@ -22,7 +23,7 @@ HELLO = """
 
 print(HELLO)
 
-INDEX = open('index.html', 'w')
+INDEX = open('templates/index.html', 'w')
 INDEX.write(HELLO)
 INDEX.close()
 
@@ -30,5 +31,5 @@ APP = Flask(__name__)
 
 @APP.route('/')
 def index():
-    return 'Hello World!'
+    return render_template('index.html')
 APP.run(host='0.0.0.0', port=81)
