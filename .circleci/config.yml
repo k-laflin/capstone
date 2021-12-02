@@ -84,8 +84,6 @@ jobs:
         - run: 
             name: set up virtual environment
             command: |
-              mkdir app
-              cd app
               make setup
               source capstone/bin/activate
               make install
