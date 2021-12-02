@@ -22,14 +22,19 @@ commands:
       - run: 
           name: install aws cli
           command: |
-              echo 'installing with pip'
-              python -m pip install awscliv2
-              echo 'done with pip; running awsv2 --install'
-              awsv2 --install
-              echo 'aliasing'
-              alias aws='awsv2'
-              echo 'call version'
-              aws --version
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+            aws --version
+          # command: |
+          #     echo 'installing with pip'
+          #     python -m pip install awscliv2
+          #     echo 'done with pip; running awsv2 --install'
+          #     awsv2 --install
+          #     echo 'aliasing'
+          #     alias aws='awsv2'
+          #     echo 'call version'
+          #     aws --version
 
 jobs:
     build:
