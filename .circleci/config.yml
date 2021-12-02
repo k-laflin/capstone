@@ -26,9 +26,9 @@ commands:
               python -m pip install awscliv2
               echo 'done with pip; running awsv2 --install'
               awsv2 --install
-              'aliasing'
+              echo 'aliasing'
               alias aws='awsv2'
-              'call version'
+              echo 'call version'
               aws --version
 
 jobs:
