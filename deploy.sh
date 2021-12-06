@@ -15,7 +15,7 @@ aws ecr get-login-password --region us-west-2 | docker login --username AWS --pa
 export VERSION=$(aws ecr describe-images --repository-name capstone \
 --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags' --output text)
 
-#get version as a number
+#get most recent version as a number
 export N=$(aws ecr describe-images --repository-name capstone \
 --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags' --output text | tr -d v)
 #index version automatically 

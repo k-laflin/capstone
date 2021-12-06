@@ -130,7 +130,7 @@ jobs:
 workflows:
   default: 
     jobs: 
-        #- lint
+        - lint
         - build
-        # - test : 
-        #     requires: [lint, build]
+        - test : 
+            requires: [lint, build]
