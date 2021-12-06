@@ -6,7 +6,7 @@ commands:
       steps:
         - run: 
             name: update .bashrc
-            command: ./update-bashrc.sh
+            command: sudo ./update-bashrc.sh
 
   eks-login:
       description: logs into eks and sets proper env variables
