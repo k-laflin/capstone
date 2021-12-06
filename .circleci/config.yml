@@ -62,15 +62,29 @@ jobs:
             name: build docker image
             command: |
               aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
-              docker build -t capstone:v${CIRCLE_WORKFLOW_ID:0:7} .
+              cat <<EOF>> ~/.bashrc
+              #get most recent capstone version as a number
+              export VERSION=$(aws ecr describe-images --repository-name capstone \
+                --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags' --output text | tr -d v)
+              #index version automatically 
+              export INDEX_VERSION=$(($VERSION + 0.1))
+              #create new version 
+              export NEW_VERSION=$(printf "v%.1f \n" $INDEX_VERSION)
+              EOF
+
+              echo new version is $NEW_VERSION
+
+              docker build -t capstone:v${NEW_VERSION} .
+
 
         - run: 
             name: commit new docker image
             command: |
               aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
+              echo new version is $NEW_VERSION
               docker image ls
-              docker tag "capstone:v${CIRCLE_WORKFLOW_ID:0:7}" "${AWS_ECR_ACCOUNT_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
-              docker push "${AWS_ECR_ACCOUNT_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
+              #docker tag "capstone:v${NEW_VERSION}" "${AWS_ECR_ACCOUNT_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
+              #docker push "${AWS_ECR_ACCOUNT_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
 
 
     lint:
@@ -117,7 +131,7 @@ jobs:
 workflows:
   default: 
     jobs: 
-        - lint
+        #- lint
         - build
-        - test : 
-            requires: [lint, build]
+        # - test : 
+        #     requires: [lint, build]
