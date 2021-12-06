@@ -7,7 +7,7 @@ commands:
         - run: 
             name: update .bashrc
             command: |
-              cat <<\EOF >> ~/.bashrc
+              cat <<\EOF>> ~/.bashrc
 
               #function to add two floating nums
               add() { n="$@"; bc <<< "${n// /+}"; }
