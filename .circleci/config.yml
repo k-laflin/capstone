@@ -57,6 +57,18 @@ commands:
               aws --version
             fi
 
+  rollback-update:
+    description: rolls back the push to ecr on a failure 
+    steps:
+      - run: 
+          name: removes newest image
+          when: on_fail
+          command: aws ecr batch-delete-images --repository-name capstone --image-ids imageTag=$(NEW_VERSION)
+      - run: 
+          name: tags previous version as latest
+          when: on_fail
+          command: docker tag "capstone:${VERSION}" "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
+
 jobs:
     build:
       machine: 
@@ -125,6 +137,7 @@ jobs:
               else
                 exit 1
               fi
+        - rollback-update
 
 
 workflows:
