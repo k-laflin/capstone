@@ -9,5 +9,5 @@ export VERSION=$(aws ecr describe-images --repository-name capstone \
 #index version automatically 
 export INDEX_VERSION=$(add $VERSION 0.1)
 #create new version 
-export NEW_VERSION=$(printf "v%.1f \n" $INDEX_VERSION)
+export NEW_VERSION=$(printf "v%.1f\n" $INDEX_VERSION)
 EOF
