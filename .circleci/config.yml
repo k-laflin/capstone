@@ -1,6 +1,27 @@
 version: 2.1
 
 commands: 
+  add-version-to-bash:
+      description: generates & saves most recent version & newly indexed version of capstone container to the bashrc
+      steps:
+        - run: 
+            name: update .bashrc
+            command: |
+              aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
+              cat <<\EOF >> ~/.bashrc
+
+              #function to add two floating nums
+              add() { n="$@"; bc <<< "${n// /+}"; }
+
+              #get most recent capstone version as a number
+              export VERSION=$(aws ecr describe-images --repository-name capstone \
+                --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags' --output text | tr -d v)
+              #index version automatically 
+              export INDEX_VERSION=$(add $VERSION 0.1)
+              #create new version 
+              export NEW_VERSION=$(printf "v%.1f \n" $INDEX_VERSION)
+              EOF
+
   eks-login:
       description: logs into eks and sets proper env variables
       steps:
@@ -57,20 +78,12 @@ jobs:
       steps:
         - checkout
         - python-install-aws
+        - add-version-to-bash
         #- eks-login
         - run:
             name: build docker image
             command: |
               aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
-              cat <<EOF>> ~/.bashrc
-              #get most recent capstone version as a number
-              export VERSION=$(aws ecr describe-images --repository-name capstone \
-                --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags' --output text | tr -d v)
-              #index version automatically 
-              export INDEX_VERSION=$(($VERSION + 0.1))
-              #create new version 
-              export NEW_VERSION=$(printf "v%.1f \n" $INDEX_VERSION)
-              EOF
 
               echo new version is $NEW_VERSION
 
