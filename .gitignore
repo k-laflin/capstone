@@ -130,3 +130,6 @@ dmypy.json
 
 # hadolint binary
 hadolint
+
+#pem files
+*.pem
