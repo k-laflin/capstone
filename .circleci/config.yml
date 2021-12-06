@@ -6,8 +6,7 @@ commands:
       steps:
         - run: 
             name: update .bashrc
-            command: |
-             ./update-bashrc.sh
+            command: ./update-bashrc.sh
 
   eks-login:
       description: logs into eks and sets proper env variables
@@ -71,10 +70,8 @@ jobs:
             name: build docker image
             command: |
               aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
-
               echo new version is $NEW_VERSION
-
-              docker build -t capstone:v${NEW_VERSION} .
+              docker build -t capstone:${NEW_VERSION} .
 
 
         - run: 
@@ -83,8 +80,10 @@ jobs:
               aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
               echo new version is $NEW_VERSION
               docker image ls
-              #docker tag "capstone:v${NEW_VERSION}" "${AWS_ECR_ACCOUNT_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
-              #docker push "${AWS_ECR_ACCOUNT_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
+              docker tag "capstone:${NEW_VERSION}" "${AWS_ECR_ACCOUNT_URL}/capstone:${NEW_VERSION}"
+              docker tag "capstone:${NEW_VERSION}" "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
+              docker push "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
+              docker push "${AWS_ECR_ACCOUNT_URL}/capstone:${NEW_VERSION}"
 
 
     lint:
