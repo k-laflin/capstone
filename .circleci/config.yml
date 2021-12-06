@@ -114,8 +114,8 @@ jobs:
             name: start docker
             command: |
               aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
-              docker pull "${AWS_ECR_ACCOUNT_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
-              docker container run -p 80:81 -d "${AWS_ECR_ACCOUNT_URL}/capstone:v${CIRCLE_WORKFLOW_ID:0:7}"
+              docker pull "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
+              docker container run -p 80:81 -d "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
         - run: 
             name: test image
             command: |
