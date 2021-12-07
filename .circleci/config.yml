@@ -110,7 +110,6 @@ jobs:
               docker push "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
               docker push "${AWS_ECR_ACCOUNT_URL}/capstone:${NEW_VERSION}"
 
-
     lint:
       docker:
         - image: python:3.7.3-stretch
@@ -128,7 +127,6 @@ jobs:
             command: |
               source capstone/bin/activate
               make lint
-        - rollback-update
 
     test: 
       machine: 
