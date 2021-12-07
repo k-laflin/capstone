@@ -165,6 +165,7 @@ jobs:
             command: |
               aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
               aws eks --region us-west-2 update-kubeconfig --name capstone
+              docker pull {AWS_ECR_ACCOUNT_URL}/capstone:latest
               kubectl get pods
               kubectl set image deployment/capstone capstone=${AWS_ECR_ACCOUNT_URL}/capstone:latest
         - rollback-update
