@@ -8,25 +8,7 @@ commands:
             name: update .bashrc
             command: ./update-bashrc.sh
 
-  eks-login:
-      description: logs into eks and sets proper env variables
-      steps:
-        - run: 
-            name: get account id & url base for all repos
-            command: |
-              export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-              echo $ACCOUNT_ID
-              export ECR_URL=$(aws ecr describe-repositories --repository-names capstone \
-              --query 'repositories[0].repositoryUri' | tr -d '"' | cut -d/ -f1)
-              echo $ECR_URL
-              aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
-        # - run: 
-        #     name: set docker creds for aws
-        #     command: |
-        #       echo $ECR_URL
-        #       aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $ECR_URL
-
-  python-install-aws:
+  linux-install-aws:
     description: installs awscli v2 using pip
     steps:
       - run: 
@@ -61,13 +43,23 @@ commands:
     description: rolls back the push to ecr on a failure 
     steps:
       - run: 
-          name: removes newest image
+          name: gets newest tag and removes newest image
           when: on_fail
-          command: aws ecr batch-delete-images --repository-name capstone --image-ids imageTag=$(NEW_VERSION)
+          command: |
+            export NEW_VERSION=$(aws ecr describe-images --repository-name capstone \
+              --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags' --output text | grep latest | cut -d 'l' -f1 | xargs)
+            
+            aws ecr batch-delete-image --repository-name capstone --image-ids imageTag=$NEW_VERSION
       - run: 
           name: tags previous version as latest
           when: on_fail
-          command: docker tag "capstone:${VERSION}" "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
+          command: |
+            export PREV_DIGEST=$(aws ecr describe-images --repository-name capstone \
+              --query 'sort_by(imageDetails,& imagePushedAt)[-2].imageDigest' --output text)
+
+            aws ecr batch-get-image --repository-name capstone --image-ids imageDigest=$PREV_DIGEST --query 'images[].imageManifest' --output text > imagemanifest.json
+
+            aws ecr put-image --repository-name capstone --image-tag latest --image-manifest file://imagemanifest.json
 
 jobs:
     build:
@@ -75,9 +67,8 @@ jobs:
           image: ubuntu-2004:202111-01
       steps:
         - checkout
-        - python-install-aws
+        - linux-install-aws
         - add-version-to-bash
-        #- eks-login
         - run:
             name: build docker image
             command: |
@@ -103,6 +94,7 @@ jobs:
         - image: python:3.7.3-stretch
       steps: 
         - checkout 
+        - linux-install-aws
         - run: 
             name: set up virtual environment
             command: |
@@ -114,14 +106,14 @@ jobs:
             command: |
               source capstone/bin/activate
               make lint
+        - rollback-update
 
     test: 
       machine: 
           image: ubuntu-2004:202111-01
       steps:
         - checkout 
-        - python-install-aws
-        #- eks-login
+        - linux-install-aws
         - run: 
             name: start docker
             command: |
@@ -139,11 +131,26 @@ jobs:
               fi
         - rollback-update
 
+    deploy:
+      machine:
+          image: ubuntu-2004:202111-01
+      steps:
+        - checkout
+        - linux-install-aws
+        - run: 
+            name: do rolling deployment
+            command: |
+              aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
+              kubectl set image deployment/capstone capstone=466390023253.dkr.ecr.us-west-2.amazonaws.com/capstone:latest
+
+
+
 
 workflows:
   default: 
     jobs: 
-        - lint
         - build
+        - lint :
+            requires: [build]
         - test : 
             requires: [lint, build]

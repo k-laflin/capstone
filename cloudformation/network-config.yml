@@ -1,4 +1,7 @@
-Description: 'Kellie Laflin/10-18-2021 : Deploy network inf. for Udagram app'
+Description: >
+  Author: Kellie Laflin
+  Date updated: 12-7-2021
+  Deploy network infrastructure for capstone application.
 Parameters:
 
   Project:
