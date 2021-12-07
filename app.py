@@ -10,7 +10,7 @@ B = random.randint(0, 255)
 #print('A Random color is :',rgb)
 
 #create new background html
-HELLO = """
+hello = """
     <html style="background-color:rgb({}, {}, {});">
     <head>
     <title>Flask Tutorial</title>
@@ -21,10 +21,10 @@ HELLO = """
     </html>  
 """.format(R, G, B)
 
-print(HELLO)
+print(hello)
 
 INDEX = open('templates/index.html', 'w')
-INDEX.write(HELLO)
+INDEX.write(hello)
 INDEX.close()
 
 APP = Flask(__name__)
