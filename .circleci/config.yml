@@ -50,6 +50,8 @@ commands:
 
             sudo chmod +x /usr/local/bin/kubectl
 
+            which kubectl
+
 
   rollback-update:
     description: rolls back the push to ecr on a failure 
@@ -69,9 +71,17 @@ commands:
             export PREV_DIGEST=$(aws ecr describe-images --repository-name capstone \
               --query 'sort_by(imageDetails,& imagePushedAt)[-2].imageDigest' --output text)
 
-            aws ecr batch-get-image --repository-name capstone --image-ids imageDigest=$PREV_DIGEST --query 'images[].imageManifest' --output text > imagemanifest.json
+            export PREV_VERSION=$(aws ecr describe-images --repository-name capstone \
+              --query 'sort_by(imageDetails,& imagePushedAt)[-2].imageTags' --output text)
 
-            aws ecr put-image --repository-name capstone --image-tag latest --image-manifest file://imagemanifest.json
+            docker pull "${AWS_ECR_ACCOUNT_URL}/capstone:${PREV_VERSION}"
+
+            docker tag "${AWS_ECR_ACCOUNT_URL}/capstone:${PREV_VERSION}" "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
+            docker push "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
+
+            #aws ecr batch-get-image --repository-name capstone --image-ids imageDigest=$PREV_DIGEST --query 'images[].imageManifest' --output text > imagemanifest.json
+
+            #aws ecr put-image --repository-name capstone --image-tag latest --image-manifest file://imagemanifest.json
 
 jobs:
     build:
@@ -154,6 +164,8 @@ jobs:
             name: do rolling deployment
             command: |
               aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
+              aws eks --region us-west-2 update-kubeconfig --name capstone
+              kubectl get pods
               kubectl set image deployment/capstone capstone=${AWS_ECR_ACCOUNT_URL}/capstone:latest
         - rollback-update
 
