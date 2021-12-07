@@ -62,8 +62,8 @@ commands:
           command: |
             export NEW_VERSION=$(aws ecr describe-images --repository-name capstone \
               --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags' --output text | grep latest | cut -d 'l' -f1 | xargs)
-            
-            aws ecr batch-delete-image --repository-name capstone --image-ids imageTag=$NEW_VERSION
+            echo $NEW_VERSION
+            aws ecr batch-delete-image --repository-name capstone --image-ids imageTag=${NEW_VERSION}
       - run: 
           name: tags previous version as latest
           when: on_fail
@@ -165,7 +165,7 @@ jobs:
             command: |
               aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
               aws eks --region us-west-2 update-kubeconfig --name capstone
-              docker pull {AWS_ECR_ACCOUNT_URL}/capstone:latest
+              docker pull "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
               kubectl get pods
               kubectl set image deployment/capstone capstone=${AWS_ECR_ACCOUNT_URL}/capstone:latest
         - rollback-update
