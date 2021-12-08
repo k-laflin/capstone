@@ -72,7 +72,7 @@ commands:
 jobs:
     network-infra:
       docker:
-        image: amazon/aws-cli
+        - image: amazon/aws-cli
       steps:
         - checkout 
         - run:
@@ -114,8 +114,6 @@ jobs:
               ./docker-login.sh
               echo new version is $NEW_VERSION
               docker build -t capstone:${NEW_VERSION} .
-
-
         - run: 
             name: commit new docker image
             command: |
