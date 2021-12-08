@@ -20,7 +20,7 @@ vpc:
 
 managedNodeGroups:
   - name: capstone-nodes 
-    instanceType: m5.large  
+    instanceType: t2.small 
     desiredCapacity: 3   
     ssh:
       enableSsm: true

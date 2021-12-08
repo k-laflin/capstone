@@ -1,13 +1,6 @@
 version: 2.1
 
 commands: 
-  add-version-to-bash:
-      description: generates & saves most recent version & newly indexed version of capstone container to the bashrc
-      steps:
-        - run: 
-            name: update .bashrc
-            command: ./update-bashrc.sh
-
   linux-install-aws:
     description: installs awscli v2 using pip
     steps:
@@ -52,7 +45,6 @@ commands:
 
             which kubectl
 
-
   rollback-update:
     description: rolls back the push to ecr on a failure 
     steps:
@@ -68,8 +60,6 @@ commands:
           name: tags previous version as latest
           when: on_fail
           command: |
-            export PREV_DIGEST=$(aws ecr describe-images --repository-name capstone \
-              --query 'sort_by(imageDetails,& imagePushedAt)[-2].imageDigest' --output text)
 
             export PREV_VERSION=$(aws ecr describe-images --repository-name capstone \
               --query 'sort_by(imageDetails,& imagePushedAt)[-2].imageTags' --output text)
@@ -79,22 +69,49 @@ commands:
             docker tag "${AWS_ECR_ACCOUNT_URL}/capstone:${PREV_VERSION}" "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
             docker push "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
 
-            #aws ecr batch-get-image --repository-name capstone --image-ids imageDigest=$PREV_DIGEST --query 'images[].imageManifest' --output text > imagemanifest.json
-
-            #aws ecr put-image --repository-name capstone --image-tag latest --image-manifest file://imagemanifest.json
-
 jobs:
+    network-infra:
+      docker:
+        image: amazon/aws-cli
+      steps:
+        - checkout 
+        - run:
+          name: Ensure network infrastructure exists
+          command: |
+            aws cloudformation deploy \
+            --template-file cloudformation/network-config.yml \
+            --stack-name "capstone-network" \
+            --parameter-overrides Project=capstone  \
+            --tags Project=capstone
+
+    build-cluster:
+      machine:
+        image: ubuntu-2004:202111-01
+      steps:
+        - checkout 
+        - linux-install-aws
+        - linux-install-kubectl
+        - run:
+            name: install eksctl
+            command: |
+              curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+              sudo mv -v /tmp/eksctl /usr/local/bin
+        - run: ./docker-login.sh
+        - run: ./build-cluster.sh 
+
     build:
       machine: 
           image: ubuntu-2004:202111-01
       steps:
         - checkout
         - linux-install-aws
-        - add-version-to-bash
+        - run:
+            name: add version variables to bashrc 
+            command: ./update-bash.sh
         - run:
             name: build docker image
             command: |
-              aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
+              ./docker-login.sh
               echo new version is $NEW_VERSION
               docker build -t capstone:${NEW_VERSION} .
 
@@ -102,7 +119,7 @@ jobs:
         - run: 
             name: commit new docker image
             command: |
-              aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
+              ./docker-login.sh
               echo new version is $NEW_VERSION
               docker image ls
               docker tag "capstone:${NEW_VERSION}" "${AWS_ECR_ACCOUNT_URL}/capstone:${NEW_VERSION}"
@@ -137,7 +154,7 @@ jobs:
         - run: 
             name: start docker
             command: |
-              aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
+              ./docker-login.sh
               docker pull "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
               docker container run -p 80:81 -d "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
         - run: 
@@ -161,25 +178,40 @@ jobs:
         - run: 
             name: do rolling deployment
             command: |
-              aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
+              ./docker-login.sh
+              
               aws eks --region us-west-2 update-kubeconfig --name capstone
+              
               export NEW_VERSION=$(aws ecr describe-images --repository-name capstone \
               --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags' --output text | grep latest | cut -d 'l' -f1 | xargs)
+              
               docker pull "${AWS_ECR_ACCOUNT_URL}/capstone:${NEW_VERSION}"
-              kubectl get pods
+              
               kubectl set image deployment/capstone capstone="${AWS_ECR_ACCOUNT_URL}/capstone:${NEW_VERSION}"
         - rollback-update
 
 
-
-
 workflows:
-  default: 
+  build_and_deploy: 
     jobs: 
-        - build
+        - build:
+            filters:
+              branches: 
+                only: main
         - lint :
             requires: [build]
         - test : 
-            requires: [lint, build]
+            requires: [lint]
         - deploy :
             requires: [test]
+
+  create_infra:
+    jobs:
+      - network-infra:
+          filters:
+            branches:
+              only: infrastructure
+      - build-cluster:
+          filters:
+            branches:
+              only: infrastructure
