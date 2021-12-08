@@ -76,13 +76,13 @@ jobs:
       steps:
         - checkout 
         - run:
-          name: Ensure network infrastructure exists
-          command: |
-            aws cloudformation deploy \
-            --template-file cloudformation/network-config.yml \
-            --stack-name "capstone-network" \
-            --parameter-overrides Project=capstone  \
-            --tags Project=capstone
+            name: Ensure network infrastructure exists
+            command: |
+              aws cloudformation deploy \
+              --template-file cloudformation/network-config.yml \
+              --stack-name "capstone-network" \
+              --parameter-overrides Project=capstone  \
+              --tags Project=capstone
 
     build-cluster:
       machine:
