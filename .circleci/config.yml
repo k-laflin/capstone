@@ -192,17 +192,17 @@ jobs:
 workflows:
   build_and_deploy: 
     jobs: 
-        - build:
-            filters:
-              branches: 
-                only: main
-        - lint :
-            requires: [build]
-        - test : 
-            requires: [lint]
-        - deploy :
-            requires: [test]
-            filters:
+      - build:
+          filters:
+            branches: 
+              only: main
+      - lint :
+          requires: [build]
+      - test : 
+          requires: [lint]
+      - deploy :
+          requires: [test]
+          filters:
             branches:
               only: main
 
