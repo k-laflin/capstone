@@ -1,13 +1,14 @@
-FROM python:3.7.3-stretch
+FROM openjdk:11-jdk
 
 SHELL ["/bin/bash", "-c"]
 
 WORKDIR /app
 
-COPY . /app/
+COPY app/ /app/
 
-RUN make install
+#RUN make install
 
-EXPOSE 80
+EXPOSE 8080
 
-CMD ["python", "app.py"]
+CMD ["mvn", "jetty:run"]
+# CMD ["python", "app.py"]
