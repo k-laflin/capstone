@@ -61,7 +61,7 @@ Resources:
           Value: !Sub ${Project} Public Subnet (AZ1)
         - Key: "kubernetes.io/role/elb"
           Value: 1
-        - Key: "kubernetes.io/cluster/${Project}"
+        - Key: "kubernetes.io/cluster/capstone"
           Value: owned
       VpcId: !Ref VPC
 
@@ -76,7 +76,7 @@ Resources:
           Value: !Sub ${Project} Public Subnet (AZ2)
         - Key: "kubernetes.io/role/elb"
           Value: 1
-        - Key: "kubernetes.io/cluster/${Project}"
+        - Key: "kubernetes.io/cluster/capstone"
           Value: owned
       VpcId: !Ref VPC
 
@@ -91,7 +91,7 @@ Resources:
           Value: !Sub ${Project} Public Subnet (AZ3)
         - Key: "kubernetes.io/role/elb"
           Value: 1
-        - Key: "kubernetes.io/cluster/${Project}"
+        - Key: "kubernetes.io/cluster/capstone"
           Value: owned
       VpcId: !Ref VPC
 
