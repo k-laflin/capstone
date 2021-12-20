@@ -17,6 +17,8 @@ export SN_2C_ID=$(aws cloudformation describe-stacks --stack-name capstone-netwo
 #go to folder
 ls
 
+echo 'updating capstone-cluster.yml'
+
 #add vpc config
 cat << EOF >> capstone-cluster.yml
 vpc:
@@ -31,6 +33,7 @@ vpc:
         id: $SN_2C_ID
 EOF
 
+cat capstone-cluster.yml
 
 #create cluster
 echo "\e[1;31mcreating capstone cluster"
