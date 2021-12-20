@@ -183,7 +183,9 @@ jobs:
               export NEW_VERSION=$(aws ecr describe-images --repository-name capstone \
               --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags' --output text | grep latest | cut -d 'l' -f1 | xargs)
               
-              docker pull "${AWS_ECR_ACCOUNT_URL}/capstone:${NEW_VERSION}"
+              echo $NEW_VERSION
+              echo "${AWS_ECR_ACCOUNT_URL}/capstone:${NEW_VERSION}"
+              docker pull ${AWS_ECR_ACCOUNT_URL}/capstone:${NEW_VERSION}
               
               kubectl set image deployment/capstone capstone="${AWS_ECR_ACCOUNT_URL}/capstone:${NEW_VERSION}"
         - rollback-update
