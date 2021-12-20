@@ -213,3 +213,4 @@ workflows:
           filters:
             branches:
               only: infrastructure
+          requires: [network-infra]

@@ -2,14 +2,38 @@
 export AWS_REGION='us-west-2'
 export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
+
+#******************#
+#save ids
+#******************#
+export VPC_ID=$(aws cloudformation describe-stacks --stack-name capstone-network --query "Stacks[0].Outputs[?OutputKey=='VPC'].OutputValue" --output text)
+export SN_2A_ID=$(aws cloudformation describe-stacks --stack-name capstone-network --query "Stacks[0].Outputs[?OutputKey=='PublicSubnet1'].OutputValue" --output text)
+export SN_2B_ID=$(aws cloudformation describe-stacks --stack-name capstone-network --query "Stacks[0].Outputs[?OutputKey=='PublicSubnet2'].OutputValue" --output text)
+export SN_2C_ID=$(aws cloudformation describe-stacks --stack-name capstone-network --query "Stacks[0].Outputs[?OutputKey=='PublicSubnet3'].OutputValue" --output text)
+
 #******************#
 #eks cluster
 #******************#
 #go to folder
 ls
 
+#add vpc config
+cat << EOF >> capstone-cluster.yml
+vpc:
+  id: $VPC_ID
+  subnets: 
+    public: 
+      us-west-2a:
+        id: $SN_2A_ID
+      us-west-2b:
+        id: $SN_2B_ID
+      us-west-2c:
+        id: $SN_2C_ID
+EOF
+
+
 #create cluster
-echo 'creating capstone cluster'
+echo "\e[1;31mcreating capstone cluster"
 eksctl create cluster -f capstone-cluster.yml
 
 #******************#
@@ -18,13 +42,13 @@ eksctl create cluster -f capstone-cluster.yml
 cd manifests/alb-controller
 
 #create OIDC identity controller
-echo 'creating iam oidc provider'
+echo '\e[1;31mcreating iam oidc provider'
 eksctl utils associate-iam-oidc-provider \
     --region ${AWS_REGION} \
     --cluster capstone \
     --approve
 
-echo 'creating iam service account'
+echo '\e[1;31mcreating iam service account'
 eksctl create iamserviceaccount \
     --cluster capstone \
     --namespace kube-system \
@@ -34,11 +58,11 @@ eksctl create iamserviceaccount \
     --approve
 
 #install cert-manager
-echo 'installing cert-manager'
+echo '\e[1;31minstalling cert-manager'
 kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.4.1/cert-manager.yaml
 
 #create load balancer
-echo 'create load balancer'
+echo '\e[1;31mcreate load balancer'
 kubectl apply -f v2_2_1_full.yaml
 
 #******************#
@@ -49,7 +73,7 @@ cd ..
 ls
 
 #deploy app
-echo 'deploy app'
+echo '\e[1;31mdeploy app'
 kubectl apply -f deploy-app.yml
 kubectl apply -f service-app.yml
 kubectl apply -f ingress.yml

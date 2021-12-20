@@ -6,18 +6,6 @@ metadata:
   region: us-west-2  
   version: "1.21"
 
-vpc:
-  id: "vpc-0c3e9270570f01285"
-  subnets: 
-    public: 
-      us-west-2a:
-        id: "subnet-099a10c2800771ff5"
-      us-west-2b:
-        id: "subnet-097853b1e2a9be360"
-      us-west-2c:
-        id: "subnet-0d8f1a9e3c637ead5"
-
-
 managedNodeGroups:
   - name: capstone-nodes 
     instanceType: m5.large
@@ -29,3 +17,4 @@ managedNodeGroups:
         imageBuilder: true  
         albIngress: true  
         autoScaler: true  
+
