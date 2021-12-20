@@ -1,6 +1,8 @@
 #set variables
 export AWS_REGION='us-west-2'
 export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+export RED='\033[0;31m'
+export NOCOLOR='\033[0m'
 
 
 #******************#
@@ -17,7 +19,7 @@ export SN_2C_ID=$(aws cloudformation describe-stacks --stack-name capstone-netwo
 #go to folder
 ls
 
-echo 'updating capstone-cluster.yml'
+echo "${RED} updating capstone-cluster.yml ${NOCOLOR}"
 
 #add vpc config
 cat << EOF >> capstone-cluster.yml
@@ -36,7 +38,7 @@ EOF
 cat capstone-cluster.yml
 
 #create cluster
-echo "\e[1;31mcreating capstone cluster"
+echo "${RED}creating capstone cluster${NOCOLOR}"
 eksctl create cluster -f capstone-cluster.yml
 
 #******************#
@@ -45,13 +47,13 @@ eksctl create cluster -f capstone-cluster.yml
 cd manifests/alb-controller
 
 #create OIDC identity controller
-echo '\e[1;31mcreating iam oidc provider'
+echo "${RED}creating iam oidc provider${NOCOLOR}"
 eksctl utils associate-iam-oidc-provider \
     --region ${AWS_REGION} \
     --cluster capstone \
     --approve
 
-echo '\e[1;31mcreating iam service account'
+echo "${RED}creating iam service account${NOCOLOR}"
 eksctl create iamserviceaccount \
     --cluster capstone \
     --namespace kube-system \
@@ -61,12 +63,16 @@ eksctl create iamserviceaccount \
     --approve
 
 #install cert-manager
-echo '\e[1;31minstalling cert-manager'
+echo "${RED}installing cert-manager${NOCOLOR}"
 kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.4.1/cert-manager.yaml
 
+sleep 30
+
 #create load balancer
-echo '\e[1;31mcreate load balancer'
+echo "${RED}create load balancer${NOCOLOR}"
 kubectl apply -f v2_2_1_full.yaml
+
+sleep 30
 
 #******************#
 #deploy microservice
@@ -76,7 +82,7 @@ cd ..
 ls
 
 #deploy app
-echo '\e[1;31mdeploy app'
+echo "${RED}deploy app${NOCOLOR}"
 kubectl apply -f deploy-app.yml
 kubectl apply -f service-app.yml
 kubectl apply -f ingress.yml
