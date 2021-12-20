@@ -3,7 +3,6 @@ Description: >
   Date updated: 12-7-2021
   Deploy network infrastructure for capstone application.
 Parameters:
-
   Project:
     Description: A name we will prefix to resources associated with the project
     Type: String
@@ -28,9 +27,7 @@ Parameters:
     Type: String
     Default: 10.0.2.0/24
 
-
 Resources:
-
   VPC:
     Type: AWS::EC2::VPC
     Properties:
@@ -56,75 +53,76 @@ Resources:
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !Select [0, !GetAZs '']
+      AvailabilityZone: !Select [0, !GetAZs ""]
       CidrBlock: !Ref PublicSubnet1CIDR
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
           Value: !Sub ${Project} Public Subnet (AZ1)
+        - Key: "kubernetes.io/role/elb"
+          Value: 1
+        - Key: "kubernetes.io/cluster/${Project}"
+          Value: owned
       VpcId: !Ref VPC
 
   PublicSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !Select [1, !GetAZs '']
+      AvailabilityZone: !Select [1, !GetAZs ""]
       CidrBlock: !Ref PublicSubnet2CIDR
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub ${Project} Public Subnet (AZ2)         
+          Value: !Sub ${Project} Public Subnet (AZ2)
+        - Key: "kubernetes.io/role/elb"
+          Value: 1
+        - Key: "kubernetes.io/cluster/${Project}"
+          Value: owned
       VpcId: !Ref VPC
-          
+
   PublicSubnet3:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !Select [2, !GetAZs '']
+      AvailabilityZone: !Select [2, !GetAZs ""]
       CidrBlock: !Ref PublicSubnet3CIDR
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: !Sub ${Project} Public Subnet (AZ3)         
+          Value: !Sub ${Project} Public Subnet (AZ3)
+        - Key: "kubernetes.io/role/elb"
+          Value: 1
+        - Key: "kubernetes.io/cluster/${Project}"
+          Value: owned
       VpcId: !Ref VPC
-
-  # PrivateSubnet2:
-  #   Type: AWS::EC2::Subnet
-  #   Properties:
-  #     AvailabilityZone: !Select [1, !GetAZs '']
-  #     CidrBlock: !Ref PrivateSubnet2CIDR
-  #     MapPublicIpOnLaunch: false
-  #     Tags:
-  #       - Key: Name
-  #         Value: !Sub ${Project} Private Subnet (AZ2)     
-      # VpcId: !Ref VPC   
 
   NatGateway1EIP:
     Type: AWS::EC2::EIP
     DependsOn: InternetGatewayAttachment
-    Properties: 
-        Domain: vpc
+    Properties:
+      Domain: vpc
 
   NatGateway2EIP:
     Type: AWS::EC2::EIP
     DependsOn: InternetGatewayAttachment
     Properties:
-        Domain: vpc
+      Domain: vpc
 
-  NatGateway1: 
-    Type: AWS::EC2::NatGateway
-    Properties: 
-        AllocationId: !GetAtt NatGateway1EIP.AllocationId
-        SubnetId: !Ref PublicSubnet1
-
-  NatGateway2: 
+  NatGateway1:
     Type: AWS::EC2::NatGateway
     Properties:
-        AllocationId: !GetAtt NatGateway2EIP.AllocationId
-        SubnetId: !Ref PublicSubnet2      
+      AllocationId: !GetAtt NatGateway1EIP.AllocationId
+      SubnetId: !Ref PublicSubnet1
+
+  NatGateway2:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGateway2EIP.AllocationId
+      SubnetId: !Ref PublicSubnet2
 
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
-      Tags: 
+      Tags:
         - Key: Name
           Value: !Sub ${Project} Public Routes
       VpcId: !Ref VPC
@@ -136,13 +134,13 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
       RouteTableId: !Ref PublicRouteTable
-  
+
   PublicSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref PublicRouteTable
       SubnetId: !Ref PublicSubnet1
-  
+
   PublicSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -155,51 +153,8 @@ Resources:
       RouteTableId: !Ref PublicRouteTable
       SubnetId: !Ref PublicSubnet3
 
-  # PrivateRouteTable1:
-  #   Type: AWS::EC2::RouteTable
-  #   Properties:
-  #     Tags:
-  #       - Key: Name
-  #         Value: !Sub ${Project} Private Routes (AZ1)
-  #     VpcId: !Ref VPC
-
-  # DefaultPrivateRoute1:
-  #   Type: AWS::EC2::Route
-  #   Properties:
-  #     DestinationCidrBlock: 0.0.0.0/0
-  #     NatGatewayId: !Ref NatGateway1
-  #     RouteTableId: !Ref PrivateRouteTable1
-
-  # PrivateSubnet1RouteTableAssociation:
-  #   Type: AWS::EC2::SubnetRouteTableAssociation
-  #   Properties:
-  #     RouteTableId: !Ref PrivateRouteTable1
-  #     SubnetId: !Ref PrivateSubnet1
-
-  # PrivateRouteTable2:
-  #   Type: AWS::EC2::RouteTable
-  #   Properties:
-  #     Tags:
-  #       - Key: Name
-  #         Value: !Sub ${Project} Private Routes (AZ2)
-  #     VpcId: !Ref VPC
-
-  # DefaultPrivateRoute2:
-  #   Type: AWS::EC2::Route
-  #   Properties:
-  #     DestinationCidrBlock: 0.0.0.0/0
-  #     NatGatewayId: !Ref NatGateway2
-  #     RouteTableId: !Ref PrivateRouteTable2
-
-  # PrivateSubnet2RouteTableAssociation:
-  #   Type: AWS::EC2::SubnetRouteTableAssociation
-  #   Properties:
-  #     RouteTableId: !Ref PrivateRouteTable2
-  #     SubnetId: !Ref PrivateSubnet2
-
 Outputs:
-
-  VPC: 
+  VPC:
     Description: A reference to the created VPC
     Value: !Ref VPC
     Export:
@@ -207,15 +162,10 @@ Outputs:
 
   PublicSubnets:
     Description: A list of the public subnets
-    Value: !Join [ ",", [ !Ref PublicSubnet1, !Ref PublicSubnet2, !Ref PublicSubnet3 ]]
+    Value:
+      !Join [",", [!Ref PublicSubnet1, !Ref PublicSubnet2, !Ref PublicSubnet3]]
     Export:
       Name: !Sub ${Project}-PUB-NETS
-
-  # PrivateSubnets:
-  #   Description: A list of the private subnets
-  #   Value: !Join [ ",", [ !Ref PrivateSubnet1, !Ref PrivateSubnet2 ]]
-  #   Export:
-  #     Name: !Sub ${Project}-PRIV-NETS
 
   PublicSubnet1:
     Description: A reference to the public subnet in the 1st Availability Zone
@@ -223,26 +173,14 @@ Outputs:
     Export:
       Name: !Sub ${Project}-PUB1-SN
 
-  PublicSubnet2: 
+  PublicSubnet2:
     Description: A reference to the public subnet in the 2nd Availability Zone
     Value: !Ref PublicSubnet2
     Export:
       Name: !Sub ${Project}-PUB2-SN
 
-  PublicSubnet3: 
+  PublicSubnet3:
     Description: A reference to the public subnet in the 3rd Availability Zone
     Value: !Ref PublicSubnet3
     Export:
       Name: !Sub ${Project}-PUB3-SN
-
-  # PrivateSubnet1:
-  #   Description: A reference to the private subnet in the 1st Availability Zone
-  #   Value: !Ref PrivateSubnet1
-  #   Export:
-  #     Name: !Sub ${Project}-PRI1-SN
-
-  # PrivateSubnet2: 
-  #   Description: A reference to the private subnet in the 2nd Availability Zone
-  #   Value: !Ref PrivateSubnet2
-  #   Export:
-  #     Name: !Sub ${Project}-PRI2-SN
