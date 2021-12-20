@@ -107,7 +107,7 @@ jobs:
         - linux-install-aws
         - run:
             name: add version variables to bashrc 
-            command: ./update-bash.sh
+            command: ./update-bashrc.sh
         - run:
             name: build docker image
             command: |
