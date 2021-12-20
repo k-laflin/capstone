@@ -1,0 +1,1 @@
+aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $AWS_ECR_ACCOUNT_URL
