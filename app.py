@@ -14,7 +14,7 @@ HELLO = """
     <title>Flask Tutorial</title>
     </head>
     <body>
-    <h1> Hello World v3!</h1>
+    <h1> Hello World v2!</h1>
     </body>
     </html>  
 """.format(R, G, B)
