@@ -17,4 +17,4 @@ spec:
               service:
                 name: "capstone"
                 port:
-                  number: 81
+                  number: 80

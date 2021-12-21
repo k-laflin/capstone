@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #set variables
 export AWS_REGION='us-west-2'
 export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)

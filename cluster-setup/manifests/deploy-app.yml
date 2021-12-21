@@ -18,4 +18,4 @@ spec:
           image: 466390023253.dkr.ecr.us-west-2.amazonaws.com/capstone:latest
           imagePullPolicy: Always
           ports:
-            - containerPort: 81
+            - containerPort: 80
