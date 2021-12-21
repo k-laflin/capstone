@@ -154,7 +154,7 @@ jobs:
             command: |
               ./docker-login.sh
               docker pull "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
-              docker container run -p 80:81 -d "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
+              docker container run -p 80:80 -d "${AWS_ECR_ACCOUNT_URL}/capstone:latest"
         - run: 
             name: test image
             command: |

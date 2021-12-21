@@ -30,4 +30,4 @@ APP = Flask(__name__)
 @APP.route('/')
 def index():
     return render_template('index.html')
-APP.run(host='0.0.0.0', port=81)
+APP.run(host='0.0.0.0', port=80)
