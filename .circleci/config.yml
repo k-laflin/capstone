@@ -53,7 +53,7 @@ commands:
           when: on_fail
           command: |
             export NEW_VERSION=$(aws ecr describe-images --repository-name capstone \
-              --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags' --output text | grep latest | cut -d 'l' -f1 | xargs)
+            --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags' --output text | xargs -n1 | sort | xargs | rev | cut -d" " -f1 | rev | tr -d v)
             echo $NEW_VERSION
             aws ecr batch-delete-image --repository-name capstone --image-ids imageTag=${NEW_VERSION}
       - run: 
@@ -181,7 +181,7 @@ jobs:
               aws eks --region us-west-2 update-kubeconfig --name capstone
               
               export NEW_VERSION=$(aws ecr describe-images --repository-name capstone \
-              --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags' --output text | grep latest | cut -d 'l' -f1 | xargs)
+              --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags' --output text | xargs -n1 | sort | xargs | rev | cut -d" " -f1 | rev | tr -d v)
               
               echo $NEW_VERSION
               echo "${AWS_ECR_ACCOUNT_URL}/capstone:${NEW_VERSION}"
